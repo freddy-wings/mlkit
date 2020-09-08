@@ -78,6 +78,10 @@ public class GraphicOverlay extends View {
             this.overlay = overlay;
         }
 
+        public Graphic() {
+
+        }
+
         /**
          * Draw the graphic on the supplied canvas. Drawing should use the following methods to convert
          * to view coordinates for the graphics that are drawn:

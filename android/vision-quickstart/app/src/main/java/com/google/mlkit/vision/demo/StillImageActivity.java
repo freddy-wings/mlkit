@@ -22,6 +22,7 @@ import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
 
 import android.view.ViewTreeObserver.OnGlobalLayoutListener;
@@ -40,24 +41,32 @@ import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.Spinner;
 import android.widget.Toast;
+import com.google.mlkit.vision.face.Face;
+import com.google.mlkit.vision.face.FaceContour;
+import com.google.mlkit.vision.face.FaceLandmark;
+import com.google.mlkit.vision.face.FaceLandmark.LandmarkType;
 
 import com.google.android.gms.common.annotation.KeepName;
 import com.google.mlkit.common.model.LocalModel;
-import com.google.mlkit.vision.demo.automl.AutoMLImageLabelerProcessor;
-import com.google.mlkit.vision.demo.barcodescanner.BarcodeScannerProcessor;
 import com.google.mlkit.vision.demo.facedetector.FaceDetectorProcessor;
-import com.google.mlkit.vision.demo.labeldetector.LabelDetectorProcessor;
-import com.google.mlkit.vision.demo.objectdetector.ObjectDetectorProcessor;
 import com.google.mlkit.vision.demo.preference.PreferenceUtils;
 import com.google.mlkit.vision.demo.preference.SettingsActivity;
 import com.google.mlkit.vision.demo.preference.SettingsActivity.LaunchSource;
-import com.google.mlkit.vision.demo.textdetector.TextRecognitionProcessor;
+import com.google.mlkit.vision.demo.facedetector.FaceGraphic;
 import com.google.mlkit.vision.label.custom.CustomImageLabelerOptions;
 import com.google.mlkit.vision.label.defaults.ImageLabelerOptions;
 import com.google.mlkit.vision.objects.custom.CustomObjectDetectorOptions;
 import com.google.mlkit.vision.objects.defaults.ObjectDetectorOptions;
 
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -70,13 +79,7 @@ public final class StillImageActivity extends AppCompatActivity {
     private static final String TAG = "StillImageActivity";
 
     private static final String OBJECT_DETECTION = "Object Detection";
-    private static final String OBJECT_DETECTION_CUSTOM = "Custom Object Detection (Birds)";
     private static final String FACE_DETECTION = "Face Detection";
-    private static final String BARCODE_SCANNING = "Barcode Scanning";
-    private static final String TEXT_RECOGNITION = "Text Recognition";
-    private static final String IMAGE_LABELING = "Image Labeling";
-    private static final String IMAGE_LABELING_CUSTOM = "Custom Image Labeling (Birds)";
-    private static final String AUTOML_LABELING = "AutoML Labeling";
 
     private static final String SIZE_SCREEN = "w:screen"; // Match screen width
     private static final String SIZE_1024_768 = "w:1024"; // ~1024*768 in a normal ratio
@@ -99,6 +102,18 @@ public final class StillImageActivity extends AppCompatActivity {
     private int imageMaxWidth;
     private int imageMaxHeight;
     private VisionImageProcessor imageProcessor;
+    public Bitmap imageBitmap;
+    public Bitmap resizedBitmap;
+    String top_str;
+    String left_str;
+    String right_str;
+    String bottom_str;
+    int bottom;
+    int top;
+    int left;
+    int right;
+    int x;
+    int y;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -117,7 +132,7 @@ public final class StillImageActivity extends AppCompatActivity {
                                         if (itemId == R.id.select_images_from_local) {
                                             startChooseImageIntentForResult();
                                             return true;
-                                        } else if (itemId == R.id.take_photo_using_camera) {
+                                        }else if (itemId == R.id.take_photo_using_camera) {
                                             startCameraIntentForResult();
                                             return true;
                                         }
@@ -192,14 +207,8 @@ public final class StillImageActivity extends AppCompatActivity {
     private void populateFeatureSelector() {
         Spinner featureSpinner = findViewById(R.id.feature_selector);
         List<String> options = new ArrayList<>();
-        options.add(OBJECT_DETECTION);
-        options.add(OBJECT_DETECTION_CUSTOM);
         options.add(FACE_DETECTION);
-        options.add(BARCODE_SCANNING);
-        options.add(TEXT_RECOGNITION);
-        options.add(IMAGE_LABELING);
-        options.add(IMAGE_LABELING_CUSTOM);
-        options.add(AUTOML_LABELING);
+
 
         // Creating adapter for featureSpinner
         ArrayAdapter<String> dataAdapter = new ArrayAdapter<>(this, R.layout.spinner_style, options);
@@ -297,7 +306,7 @@ public final class StillImageActivity extends AppCompatActivity {
         }
     }
 
-    private void tryReloadAndDetectInImage() {
+    public void tryReloadAndDetectInImage() {
         Log.d(TAG, "Try reload and detect image");
         try {
             if (imageUri == null) {
@@ -309,7 +318,7 @@ public final class StillImageActivity extends AppCompatActivity {
                 return;
             }
 
-            Bitmap imageBitmap = BitmapUtils.getBitmapFromContentUri(getContentResolver(), imageUri);
+            imageBitmap = BitmapUtils.getBitmapFromContentUri(getContentResolver(), imageUri);
             if (imageBitmap == null) {
                 return;
             }
@@ -326,7 +335,7 @@ public final class StillImageActivity extends AppCompatActivity {
                             (float) imageBitmap.getWidth() / (float) targetedSize.first,
                             (float) imageBitmap.getHeight() / (float) targetedSize.second);
 
-            Bitmap resizedBitmap =
+            resizedBitmap =
                     Bitmap.createScaledBitmap(
                             imageBitmap,
                             (int) (imageBitmap.getWidth() / scaleFactor),
@@ -375,46 +384,8 @@ public final class StillImageActivity extends AppCompatActivity {
     private void createImageProcessor() {
         try {
             switch (selectedMode) {
-                case OBJECT_DETECTION:
-                    Log.i(TAG, "Using Object Detector Processor");
-                    ObjectDetectorOptions objectDetectorOptions =
-                            PreferenceUtils.getObjectDetectorOptionsForStillImage(this);
-                    imageProcessor = new ObjectDetectorProcessor(this, objectDetectorOptions);
-                    break;
-                case OBJECT_DETECTION_CUSTOM:
-                    Log.i(TAG, "Using Custom Object Detector Processor");
-                    LocalModel localModel =
-                            new LocalModel.Builder()
-                                    .setAssetFilePath("custom_models/bird_classifier.tflite")
-                                    .build();
-                    CustomObjectDetectorOptions customObjectDetectorOptions =
-                            PreferenceUtils.getCustomObjectDetectorOptionsForStillImage(this, localModel);
-                    imageProcessor = new ObjectDetectorProcessor(this, customObjectDetectorOptions);
-                    break;
                 case FACE_DETECTION:
                     imageProcessor = new FaceDetectorProcessor(this);
-                    break;
-                case BARCODE_SCANNING:
-                    imageProcessor = new BarcodeScannerProcessor(this);
-                    break;
-                case TEXT_RECOGNITION:
-                    imageProcessor = new TextRecognitionProcessor(this);
-                    break;
-                case IMAGE_LABELING:
-                    imageProcessor = new LabelDetectorProcessor(this, ImageLabelerOptions.DEFAULT_OPTIONS);
-                    break;
-                case IMAGE_LABELING_CUSTOM:
-                    Log.i(TAG, "Using Custom Image Label Detector Processor");
-                    LocalModel localClassifier =
-                            new LocalModel.Builder()
-                                    .setAssetFilePath("custom_models/bird_classifier.tflite")
-                                    .build();
-                    CustomImageLabelerOptions customImageLabelerOptions =
-                            new CustomImageLabelerOptions.Builder(localClassifier).build();
-                    imageProcessor = new LabelDetectorProcessor(this, customImageLabelerOptions);
-                    break;
-                case AUTOML_LABELING:
-                    imageProcessor = new AutoMLImageLabelerProcessor(this);
                     break;
                 default:
                     Log.e(TAG, "Unknown selectedMode: " + selectedMode);
@@ -427,5 +398,182 @@ public final class StillImageActivity extends AppCompatActivity {
                     Toast.LENGTH_LONG)
                     .show();
         }
+    }
+
+    private static final String FILE_NAME_TOP = "top.txt";
+    private static final String FILE_NAME_LEFT = "left.txt";
+    private static final String FILE_NAME_RIGHT = "right.txt";
+    private static final String FILE_NAME_BOTTOM = "bottom.txt";
+    public void Crop(View view) {
+        FaceGraphic fg1 = new FaceGraphic();
+//        fg1.draw(canvas);
+        FileInputStream fis = null;
+        try{
+            fis = openFileInput(FILE_NAME_TOP);
+            InputStreamReader isr = new InputStreamReader(fis);
+            BufferedReader br = new BufferedReader(isr);
+            StringBuilder sb = new StringBuilder();
+
+            String text;
+
+            while ((text=br.readLine())!=null){
+                sb.append(text);
+            }
+            top_str = sb.toString();
+        }catch (FileNotFoundException e){
+            e.printStackTrace();
+        }catch (IOException e){
+            e.printStackTrace();
+        }finally{
+            if (fis != null){
+                try{
+                    fis.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        FileInputStream fis_left = null;
+        try{
+            fis_left = openFileInput(FILE_NAME_LEFT);
+            InputStreamReader isr = new InputStreamReader(fis_left);
+            BufferedReader br = new BufferedReader(isr);
+            StringBuilder sb = new StringBuilder();
+
+            String text;
+
+            while ((text=br.readLine())!=null){
+                sb.append(text);
+            }
+            left_str = sb.toString();
+        }catch (FileNotFoundException e){
+            e.printStackTrace();
+        }catch (IOException e){
+            e.printStackTrace();
+        }finally{
+            if (fis_left != null){
+                try{
+                    fis_left.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        FileInputStream fis_right = null;
+        try{
+            fis_right = openFileInput(FILE_NAME_RIGHT);
+            InputStreamReader isr = new InputStreamReader(fis_right);
+            BufferedReader br = new BufferedReader(isr);
+            StringBuilder sb = new StringBuilder();
+
+            String text;
+
+            while ((text=br.readLine())!=null){
+                sb.append(text);
+            }
+            right_str = sb.toString();
+        }catch (FileNotFoundException e){
+            e.printStackTrace();
+        }catch (IOException e){
+            e.printStackTrace();
+        }finally{
+            if (fis_right != null){
+                try{
+                    fis_right.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        FileInputStream fis_bottom = null;
+        try{
+            fis_bottom = openFileInput(FILE_NAME_BOTTOM);
+            InputStreamReader isr = new InputStreamReader(fis_bottom);
+            BufferedReader br = new BufferedReader(isr);
+            StringBuilder sb = new StringBuilder();
+
+            String text;
+
+            while ((text=br.readLine())!=null){
+                sb.append(text);
+            }
+            bottom_str = sb.toString();
+        }catch (FileNotFoundException e){
+            e.printStackTrace();
+        }catch (IOException e){
+            e.printStackTrace();
+        }finally{
+            if (fis_bottom != null){
+                try{
+                    fis_bottom.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        top = Integer.parseInt(top_str);
+        bottom = Integer.parseInt(bottom_str);
+        left = Integer.parseInt(left_str);
+        right = Integer.parseInt(right_str);
+
+//        Log.d("STATE2", "top : "+ top + " bottom : "+ bottom +" left : "+ left +" right : "+ right );
+
+        Bitmap new_bitmap = Bitmap.createBitmap(resizedBitmap,left,top,right-left,bottom-top);
+        Bitmap new_bitmap_resized = Bitmap.createScaledBitmap(new_bitmap,160,160,true);
+        preview.setImageBitmap(new_bitmap_resized);
+        Log.d("STATE2", "top : "+ top + " bottom : "+ bottom +" left : "+ left +" right : "+ right );
+
+        String path = Environment.getExternalStorageDirectory().toString();
+        OutputStream fOut = null;
+        File file = new File(path, "photo.jpg");
+        try {
+            fOut = new FileOutputStream(file);
+            new_bitmap_resized.compress(Bitmap.CompressFormat.JPEG,100,fOut);
+            fOut.flush();
+            fOut.close();
+//            MediaStore.Images.Media.insertImage(getContentResolver(),file.getAbsolutePath(),file.getName(),file.getName());
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+//        try {
+//            String filePath = "photo.png";
+//            FileOutputStream fileOutputStream = new FileOutputStream(filePath);
+//            BufferedOutputStream bos = new BufferedOutputStream(fileOutputStream);
+//            //Toast.makeText(m_cont, "Image Saved at----" + filePath, Toast.LENGTH_LONG).show();
+//            // choose another format if PNG doesn't suit you
+//            new_bitmap_resized.compress(Bitmap.CompressFormat.PNG, 100, bos);
+//            bos.flush();
+//            bos.close();
+//            FileOutputStream out = new FileOutputStream("photo.jpeg");
+//            new_bitmap_resized.compress(Bitmap.CompressFormat.JPEG, 100, out); // bmp is your Bitmap instance
+//            PNG is a lossless format, the compression factor (100) is ignored
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//        FileOutputStream fos_right = null;
+//        int intRight = (int) right;
+//        String right_string = String.valueOf(intRight);
+//        try{
+//            fos_right = getApplicationContext().openFileOutput(FILE_NAME_RIGHT, MODE_PRIVATE);
+//            fos_right.write(right_string.getBytes());
+//        }catch (FileNotFoundException e){
+//            e.printStackTrace();
+//        }catch (IOException e){
+//            e.printStackTrace();
+//        }finally {
+//            if(fos_right!=null){
+//                try {
+//                    fos_right.close();
+//                }catch (IOException e){
+//                    e.printStackTrace();
+//                }
+//            }
+//        }
     }
 }
