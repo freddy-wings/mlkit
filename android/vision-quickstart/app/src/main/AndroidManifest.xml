@@ -94,10 +94,6 @@
 <!--            android:theme="@style/AppTheme">-->
 <!--        </activity>-->
 
-        <activity
-            android:name=".preference.SettingsActivity"
-            android:exported="false"/>
-
     </application>
 
 </manifest>
