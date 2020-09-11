@@ -16,25 +16,43 @@
 
 package com.google.mlkit.vision.demo.facedetector;
 
+import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PointF;
+import android.util.Log;
 
 import com.google.mlkit.vision.demo.GraphicOverlay;
 import com.google.mlkit.vision.demo.GraphicOverlay.Graphic;
+import com.google.mlkit.vision.demo.StillImageActivity;
 import com.google.mlkit.vision.face.Face;
 import com.google.mlkit.vision.face.FaceContour;
 import com.google.mlkit.vision.face.FaceLandmark;
 import com.google.mlkit.vision.face.FaceLandmark.LandmarkType;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.Locale;
+
+import static android.content.Context.MODE_PRIVATE;
 
 /**
  * Graphic instance for rendering face position, contour, and landmarks within the associated
  * graphic overlay view.
  */
 public class FaceGraphic extends Graphic {
+    private float left;
+    private float top;
+    private float right;
+    private float bottom;
+    private float x;
+    private float y;
+    private static final String FILE_NAME_TOP = "top.txt";
+    private static final String FILE_NAME_LEFT = "left.txt";
+    private static final String FILE_NAME_RIGHT = "right.txt";
+    private static final String FILE_NAME_BOTTOM = "bottom.txt";
     private static final float FACE_POSITION_RADIUS = 4.0f;
     private static final float ID_TEXT_SIZE = 30.0f;
     private static final float ID_Y_OFFSET = 40.0f;
@@ -55,14 +73,15 @@ public class FaceGraphic extends Graphic {
             {Color.BLACK, Color.GREEN}
     };
 
-    private final Paint facePositionPaint;
-    private final Paint[] idPaints;
-    private final Paint[] boxPaints;
-    private final Paint[] labelPaints;
+
+    private Paint facePositionPaint;
+    private Paint[] idPaints;
+    private Paint[] boxPaints;
+    private Paint[] labelPaints;
 
     private volatile Face face;
 
-    FaceGraphic(GraphicOverlay overlay, Face face) {
+    public FaceGraphic(GraphicOverlay overlay, Face face) {
         super(overlay);
 
         this.face = face;
@@ -91,6 +110,9 @@ public class FaceGraphic extends Graphic {
         }
     }
 
+    public FaceGraphic() {
+
+    }
     /**
      * Draws the face annotations for position on the supplied canvas.
      */
@@ -102,15 +124,15 @@ public class FaceGraphic extends Graphic {
         }
 
         // Draws a circle at the position of the detected face, with the face's track id below.
-        float x = translateX(face.getBoundingBox().centerX());
-        float y = translateY(face.getBoundingBox().centerY());
+        x = translateX(face.getBoundingBox().centerX());
+        y = translateY(face.getBoundingBox().centerY());
         canvas.drawCircle(x, y, FACE_POSITION_RADIUS, facePositionPaint);
 
         // Calculate positions.
-        float left = x - scale(face.getBoundingBox().width() / 2.0f);
-        float top = y - scale(face.getBoundingBox().height() / 2.0f);
-        float right = x + scale(face.getBoundingBox().width() / 2.0f);
-        float bottom = y + scale(face.getBoundingBox().height() / 2.0f);
+        left = x - scale(face.getBoundingBox().width() / 2.0f);
+        top = y - scale(face.getBoundingBox().height() / 2.0f);
+        right = x + scale(face.getBoundingBox().width() / 2.0f);
+        bottom = y + scale(face.getBoundingBox().height() / 2.0f);
         float lineHeight = ID_TEXT_SIZE + BOX_STROKE_WIDTH;
         float yLabelOffset = -lineHeight;
 
@@ -216,7 +238,126 @@ public class FaceGraphic extends Graphic {
         drawFaceLandmark(canvas, FaceLandmark.RIGHT_EYE);
         drawFaceLandmark(canvas, FaceLandmark.LEFT_CHEEK);
         drawFaceLandmark(canvas, FaceLandmark.RIGHT_CHEEK);
+
+        FileOutputStream fos = null;
+        int intTop = (int) top;
+        String top_string = String.valueOf(intTop);
+        try{
+            fos = getApplicationContext().openFileOutput(FILE_NAME_TOP, MODE_PRIVATE);
+            fos.write(top_string.getBytes());
+        }catch (FileNotFoundException e){
+            e.printStackTrace();
+        }catch (IOException e){
+            e.printStackTrace();
+        }finally {
+            if(fos!=null){
+                try {
+                    fos.close();
+                }catch (IOException e){
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        FileOutputStream fos_left = null;
+        int intLeft = (int) left;
+        String left_string = String.valueOf(intLeft);
+        try{
+            fos_left = getApplicationContext().openFileOutput(FILE_NAME_LEFT, MODE_PRIVATE);
+            fos_left.write(left_string.getBytes());
+        }catch (FileNotFoundException e){
+            e.printStackTrace();
+        }catch (IOException e){
+            e.printStackTrace();
+        }finally {
+            if(fos_left!=null){
+                try {
+                    fos_left.close();
+                }catch (IOException e){
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        FileOutputStream fos_right = null;
+        int intRight = (int) right;
+        String right_string = String.valueOf(intRight);
+        try{
+            fos_right = getApplicationContext().openFileOutput(FILE_NAME_RIGHT, MODE_PRIVATE);
+            fos_right.write(right_string.getBytes());
+        }catch (FileNotFoundException e){
+            e.printStackTrace();
+        }catch (IOException e){
+            e.printStackTrace();
+        }finally {
+            if(fos_right!=null){
+                try {
+                    fos_right.close();
+                }catch (IOException e){
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        FileOutputStream fos_bottom = null;
+        int intBottom = (int) bottom;
+        String bottom_string = String.valueOf(intBottom);
+        try{
+            fos_bottom = getApplicationContext().openFileOutput(FILE_NAME_BOTTOM, MODE_PRIVATE);
+            fos_bottom.write(bottom_string.getBytes());
+        }catch (FileNotFoundException e){
+            e.printStackTrace();
+        }catch (IOException e){
+            e.printStackTrace();
+        }finally {
+            if(fos_bottom!=null){
+                try {
+                    fos_bottom.close();
+                }catch (IOException e){
+                    e.printStackTrace();
+                }
+            }
+        }
+
+//        setTop(top);
+//        setBottom(bottom);
+//        setLeft(left);
+//        setRight(right);
+        Log.d("STATE2","top : " + intTop + " bottom : " + intBottom + " left : " + intLeft + " right : " + intRight);
     }
+
+    public float getTop(){
+        return top;
+    }
+
+    public float getLeft(){
+        return left;
+    }
+
+    public float getRight(){
+        return right;
+    }
+
+    public float getBottom(){
+        return bottom;
+    }
+
+    public void setTop(float top) {
+        this.top = top;
+    }
+
+    public void setBottom(float bottom) {
+        this.bottom = bottom;
+    }
+
+    public void setLeft(float left) {
+        this.left = left;
+    }
+
+    public void setRight(float right) {
+        this.right = right;
+    }
+
 
     private void drawFaceLandmark(Canvas canvas, @LandmarkType int landmarkType) {
         FaceLandmark faceLandmark = face.getLandmark(landmarkType);
