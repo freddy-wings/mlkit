@@ -22,6 +22,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PointF;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.google.mlkit.vision.demo.GraphicOverlay;
 import com.google.mlkit.vision.demo.GraphicOverlay.Graphic;
@@ -53,6 +54,7 @@ public class FaceGraphic extends Graphic {
     private static final String FILE_NAME_LEFT = "left.txt";
     private static final String FILE_NAME_RIGHT = "right.txt";
     private static final String FILE_NAME_BOTTOM = "bottom.txt";
+    private static final String FILE_NAME_SMILE = "smile.txt";
     private static final float FACE_POSITION_RADIUS = 4.0f;
     private static final float ID_TEXT_SIZE = 30.0f;
     private static final float ID_Y_OFFSET = 40.0f;
@@ -140,224 +142,213 @@ public class FaceGraphic extends Graphic {
         int colorID = (face.getTrackingId() == null)
                 ? 0 : Math.abs(face.getTrackingId() % NUM_COLORS);
 
-        // Calculate width and height of label box
-        float textWidth = idPaints[colorID].measureText("ID: " + face.getTrackingId());
-        if (face.getSmilingProbability() != null) {
-            yLabelOffset -= lineHeight;
-            textWidth = Math.max(textWidth, idPaints[colorID].measureText(
-                    String.format(Locale.US, "Happiness: %.2f", face.getSmilingProbability())));
-        }
-        if (face.getLeftEyeOpenProbability() != null) {
-            yLabelOffset -= lineHeight;
-            textWidth = Math.max(textWidth, idPaints[colorID].measureText(
-                    String.format(Locale.US, "Left eye: %.2f", face.getLeftEyeOpenProbability())));
-        }
-        if (face.getRightEyeOpenProbability() != null) {
-            yLabelOffset -= lineHeight;
-            textWidth = Math.max(textWidth, idPaints[colorID].measureText(
-                    String.format(Locale.US, "Right eye: %.2f", face.getLeftEyeOpenProbability())));
-        }
-
-        // Draw labels
-        canvas.drawRect(left - BOX_STROKE_WIDTH,
-                top + yLabelOffset,
-                left + textWidth + (2 * BOX_STROKE_WIDTH),
-                top,
-                labelPaints[colorID]);
-        yLabelOffset += ID_TEXT_SIZE;
-        canvas.drawRect(left, top, right, bottom, boxPaints[colorID]);
-        canvas.drawText("ID: " + face.getTrackingId(), left, top + yLabelOffset,
-                idPaints[colorID]);
-        yLabelOffset += lineHeight;
-
-        // Draws all face contours.
-        for (FaceContour contour : face.getAllContours()) {
-            for (PointF point : contour.getPoints()) {
-                canvas.drawCircle(
-                        translateX(point.x), translateY(point.y), FACE_POSITION_RADIUS, facePositionPaint);
+        if (face.getSmilingProbability()<0.5){
+            Toast.makeText(getApplicationContext(),"Harap senyum, foto hanya terdeteksi jika senyum",Toast.LENGTH_LONG).show();
+        }else{
+            // Calculate width and height of label box
+            float textWidth = idPaints[colorID].measureText("ID: " + face.getTrackingId());
+            if (face.getSmilingProbability() != null) {
+                yLabelOffset -= lineHeight;
+                textWidth = Math.max(textWidth, idPaints[colorID].measureText(
+                        String.format(Locale.US, "Happiness: %.2f", face.getSmilingProbability())));
             }
-        }
+            if (face.getLeftEyeOpenProbability() != null) {
+                yLabelOffset -= lineHeight;
+                textWidth = Math.max(textWidth, idPaints[colorID].measureText(
+                        String.format(Locale.US, "Left eye: %.2f", face.getLeftEyeOpenProbability())));
+            }
+            if (face.getRightEyeOpenProbability() != null) {
+                yLabelOffset -= lineHeight;
+                textWidth = Math.max(textWidth, idPaints[colorID].measureText(
+                        String.format(Locale.US, "Right eye: %.2f", face.getLeftEyeOpenProbability())));
+            }
 
-        // Draws smiling and left/right eye open probabilities.
-        if (face.getSmilingProbability() != null) {
-            canvas.drawText(
-                    "Smiling: " + String.format(Locale.US, "%.2f", face.getSmilingProbability()),
-                    left,
+            // Draw labels
+            canvas.drawRect(left - BOX_STROKE_WIDTH,
                     top + yLabelOffset,
+                    left + textWidth + (2 * BOX_STROKE_WIDTH),
+                    top,
+                    labelPaints[colorID]);
+            yLabelOffset += ID_TEXT_SIZE;
+            canvas.drawRect(left, top, right, bottom, boxPaints[colorID]);
+            canvas.drawText("ID: " + face.getTrackingId(), left, top + yLabelOffset,
                     idPaints[colorID]);
             yLabelOffset += lineHeight;
-        }
 
-        FaceLandmark leftEye = face.getLandmark(FaceLandmark.LEFT_EYE);
-        if (leftEye != null && face.getLeftEyeOpenProbability() != null) {
-            canvas.drawText(
-                    "Left eye open: " + String.format(Locale.US, "%.2f", face.getLeftEyeOpenProbability()),
-                    translateX(leftEye.getPosition().x) + ID_X_OFFSET,
-                    translateY(leftEye.getPosition().y) + ID_Y_OFFSET,
-                    idPaints[colorID]);
-        } else if (leftEye != null && face.getLeftEyeOpenProbability() == null) {
-            canvas.drawText(
-                    "Left eye",
-                    left,
-                    top + yLabelOffset,
-                    idPaints[colorID]);
-            yLabelOffset += lineHeight;
-        } else if (leftEye == null && face.getLeftEyeOpenProbability() != null) {
-            canvas.drawText(
-                    "Left eye open: " + String.format(Locale.US, "%.2f", face.getLeftEyeOpenProbability()),
-                    left,
-                    top + yLabelOffset,
-                    idPaints[colorID]);
-            yLabelOffset += lineHeight;
-        }
-
-        FaceLandmark rightEye = face.getLandmark(FaceLandmark.RIGHT_EYE);
-        if (rightEye != null && face.getRightEyeOpenProbability() != null) {
-            canvas.drawText(
-                    "Right eye open: " + String.format(Locale.US, "%.2f", face.getRightEyeOpenProbability()),
-                    translateX(rightEye.getPosition().x) + ID_X_OFFSET,
-                    translateY(rightEye.getPosition().y) + ID_Y_OFFSET,
-                    idPaints[colorID]);
-        } else if (rightEye != null && face.getRightEyeOpenProbability() == null) {
-            canvas.drawText(
-                    "Right eye",
-                    left,
-                    top + yLabelOffset,
-                    idPaints[colorID]);
-            yLabelOffset += lineHeight;
-        } else if (rightEye == null && face.getRightEyeOpenProbability() != null) {
-            canvas.drawText(
-                    "Right eye open: " + String.format(Locale.US, "%.2f", face.getRightEyeOpenProbability()),
-                    left,
-                    top + yLabelOffset,
-                    idPaints[colorID]);
-        }
-
-        // Draw facial landmarks
-        drawFaceLandmark(canvas, FaceLandmark.LEFT_EYE);
-        drawFaceLandmark(canvas, FaceLandmark.RIGHT_EYE);
-        drawFaceLandmark(canvas, FaceLandmark.LEFT_CHEEK);
-        drawFaceLandmark(canvas, FaceLandmark.RIGHT_CHEEK);
-
-        FileOutputStream fos = null;
-        int intTop = (int) top;
-        String top_string = String.valueOf(intTop);
-        try{
-            fos = getApplicationContext().openFileOutput(FILE_NAME_TOP, MODE_PRIVATE);
-            fos.write(top_string.getBytes());
-        }catch (FileNotFoundException e){
-            e.printStackTrace();
-        }catch (IOException e){
-            e.printStackTrace();
-        }finally {
-            if(fos!=null){
-                try {
-                    fos.close();
-                }catch (IOException e){
-                    e.printStackTrace();
+            // Draws all face contours.
+            for (FaceContour contour : face.getAllContours()) {
+                for (PointF point : contour.getPoints()) {
+                    canvas.drawCircle(
+                            translateX(point.x), translateY(point.y), FACE_POSITION_RADIUS, facePositionPaint);
                 }
             }
-        }
 
-        FileOutputStream fos_left = null;
-        int intLeft = (int) left;
-        String left_string = String.valueOf(intLeft);
-        try{
-            fos_left = getApplicationContext().openFileOutput(FILE_NAME_LEFT, MODE_PRIVATE);
-            fos_left.write(left_string.getBytes());
-        }catch (FileNotFoundException e){
-            e.printStackTrace();
-        }catch (IOException e){
-            e.printStackTrace();
-        }finally {
-            if(fos_left!=null){
-                try {
-                    fos_left.close();
-                }catch (IOException e){
-                    e.printStackTrace();
+            // Draws smiling and left/right eye open probabilities.
+            if (face.getSmilingProbability() != null) {
+                canvas.drawText(
+                        "Smiling: " + String.format(Locale.US, "%.2f", face.getSmilingProbability()),
+                        left,
+                        top + yLabelOffset,
+                        idPaints[colorID]);
+                yLabelOffset += lineHeight;
+//            FileOutputStream smile_txt = null;
+//            String left_string = String.valueOf(face.getSmilingProbability());
+//            try{
+//                smile_txt = getApplicationContext().openFileOutput(FILE_NAME_SMILE, MODE_PRIVATE);
+//                smile_txt.write(left_string.getBytes());
+//            }catch (FileNotFoundException e){
+//                e.printStackTrace();
+//            }catch (IOException e){
+//                e.printStackTrace();
+//            }finally {
+//                if(smile_txt!=null){
+//                    try {
+//                        smile_txt.close();
+//                    }catch (IOException e){
+//                        e.printStackTrace();
+//                    }
+//                }
+//            }
+            }
+
+            FaceLandmark leftEye = face.getLandmark(FaceLandmark.LEFT_EYE);
+            if (leftEye != null && face.getLeftEyeOpenProbability() != null) {
+                canvas.drawText(
+                        "Left eye open: " + String.format(Locale.US, "%.2f", face.getLeftEyeOpenProbability()),
+                        translateX(leftEye.getPosition().x) + ID_X_OFFSET,
+                        translateY(leftEye.getPosition().y) + ID_Y_OFFSET,
+                        idPaints[colorID]);
+            } else if (leftEye != null && face.getLeftEyeOpenProbability() == null) {
+                canvas.drawText(
+                        "Left eye",
+                        left,
+                        top + yLabelOffset,
+                        idPaints[colorID]);
+                yLabelOffset += lineHeight;
+            } else if (leftEye == null && face.getLeftEyeOpenProbability() != null) {
+                canvas.drawText(
+                        "Left eye open: " + String.format(Locale.US, "%.2f", face.getLeftEyeOpenProbability()),
+                        left,
+                        top + yLabelOffset,
+                        idPaints[colorID]);
+                yLabelOffset += lineHeight;
+            }
+
+            FaceLandmark rightEye = face.getLandmark(FaceLandmark.RIGHT_EYE);
+            if (rightEye != null && face.getRightEyeOpenProbability() != null) {
+                canvas.drawText(
+                        "Right eye open: " + String.format(Locale.US, "%.2f", face.getRightEyeOpenProbability()),
+                        translateX(rightEye.getPosition().x) + ID_X_OFFSET,
+                        translateY(rightEye.getPosition().y) + ID_Y_OFFSET,
+                        idPaints[colorID]);
+            } else if (rightEye != null && face.getRightEyeOpenProbability() == null) {
+                canvas.drawText(
+                        "Right eye",
+                        left,
+                        top + yLabelOffset,
+                        idPaints[colorID]);
+                yLabelOffset += lineHeight;
+            } else if (rightEye == null && face.getRightEyeOpenProbability() != null) {
+                canvas.drawText(
+                        "Right eye open: " + String.format(Locale.US, "%.2f", face.getRightEyeOpenProbability()),
+                        left,
+                        top + yLabelOffset,
+                        idPaints[colorID]);
+            }
+
+            // Draw facial landmarks
+            drawFaceLandmark(canvas, FaceLandmark.LEFT_EYE);
+            drawFaceLandmark(canvas, FaceLandmark.RIGHT_EYE);
+            drawFaceLandmark(canvas, FaceLandmark.LEFT_CHEEK);
+            drawFaceLandmark(canvas, FaceLandmark.RIGHT_CHEEK);
+
+            FileOutputStream fos = null;
+            int intTop = (int) top;
+            String top_string = String.valueOf(intTop);
+            try{
+                fos = getApplicationContext().openFileOutput(FILE_NAME_TOP, MODE_PRIVATE);
+                fos.write(top_string.getBytes());
+            }catch (FileNotFoundException e){
+                e.printStackTrace();
+            }catch (IOException e){
+                e.printStackTrace();
+            }finally {
+                if(fos!=null){
+                    try {
+                        fos.close();
+                    }catch (IOException e){
+                        e.printStackTrace();
+                    }
                 }
             }
-        }
 
-        FileOutputStream fos_right = null;
-        int intRight = (int) right;
-        String right_string = String.valueOf(intRight);
-        try{
-            fos_right = getApplicationContext().openFileOutput(FILE_NAME_RIGHT, MODE_PRIVATE);
-            fos_right.write(right_string.getBytes());
-        }catch (FileNotFoundException e){
-            e.printStackTrace();
-        }catch (IOException e){
-            e.printStackTrace();
-        }finally {
-            if(fos_right!=null){
-                try {
-                    fos_right.close();
-                }catch (IOException e){
-                    e.printStackTrace();
+            FileOutputStream fos_left = null;
+            int intLeft = (int) left;
+            String left_string = String.valueOf(intLeft);
+            try{
+                fos_left = getApplicationContext().openFileOutput(FILE_NAME_LEFT, MODE_PRIVATE);
+                fos_left.write(left_string.getBytes());
+            }catch (FileNotFoundException e){
+                e.printStackTrace();
+            }catch (IOException e){
+                e.printStackTrace();
+            }finally {
+                if(fos_left!=null){
+                    try {
+                        fos_left.close();
+                    }catch (IOException e){
+                        e.printStackTrace();
+                    }
                 }
             }
-        }
 
-        FileOutputStream fos_bottom = null;
-        int intBottom = (int) bottom;
-        String bottom_string = String.valueOf(intBottom);
-        try{
-            fos_bottom = getApplicationContext().openFileOutput(FILE_NAME_BOTTOM, MODE_PRIVATE);
-            fos_bottom.write(bottom_string.getBytes());
-        }catch (FileNotFoundException e){
-            e.printStackTrace();
-        }catch (IOException e){
-            e.printStackTrace();
-        }finally {
-            if(fos_bottom!=null){
-                try {
-                    fos_bottom.close();
-                }catch (IOException e){
-                    e.printStackTrace();
+            FileOutputStream fos_right = null;
+            int intRight = (int) right;
+            String right_string = String.valueOf(intRight);
+            try{
+                fos_right = getApplicationContext().openFileOutput(FILE_NAME_RIGHT, MODE_PRIVATE);
+                fos_right.write(right_string.getBytes());
+            }catch (FileNotFoundException e){
+                e.printStackTrace();
+            }catch (IOException e){
+                e.printStackTrace();
+            }finally {
+                if(fos_right!=null){
+                    try {
+                        fos_right.close();
+                    }catch (IOException e){
+                        e.printStackTrace();
+                    }
                 }
             }
-        }
+
+            FileOutputStream fos_bottom = null;
+            int intBottom = (int) bottom;
+            String bottom_string = String.valueOf(intBottom);
+            try{
+                fos_bottom = getApplicationContext().openFileOutput(FILE_NAME_BOTTOM, MODE_PRIVATE);
+                fos_bottom.write(bottom_string.getBytes());
+            }catch (FileNotFoundException e){
+                e.printStackTrace();
+            }catch (IOException e){
+                e.printStackTrace();
+            }finally {
+                if(fos_bottom!=null){
+                    try {
+                        fos_bottom.close();
+                    }catch (IOException e){
+                        e.printStackTrace();
+                    }
+                }
+            }
 
 //        setTop(top);
 //        setBottom(bottom);
 //        setLeft(left);
 //        setRight(right);
-        Log.d("STATE2","top : " + intTop + " bottom : " + intBottom + " left : " + intLeft + " right : " + intRight);
+            Log.d("STATE2","top : " + intTop + " bottom : " + intBottom + " left : " + intLeft + " right : " + intRight);
+        }
     }
-
-    public float getTop(){
-        return top;
-    }
-
-    public float getLeft(){
-        return left;
-    }
-
-    public float getRight(){
-        return right;
-    }
-
-    public float getBottom(){
-        return bottom;
-    }
-
-    public void setTop(float top) {
-        this.top = top;
-    }
-
-    public void setBottom(float bottom) {
-        this.bottom = bottom;
-    }
-
-    public void setLeft(float left) {
-        this.left = left;
-    }
-
-    public void setRight(float right) {
-        this.right = right;
-    }
-
 
     private void drawFaceLandmark(Canvas canvas, @LandmarkType int landmarkType) {
         FaceLandmark faceLandmark = face.getLandmark(landmarkType);

@@ -76,7 +76,11 @@ public final class StillImageActivity extends AppCompatActivity {
 
     private static final String KEY_IMAGE_URI = "com.google.mlkit.vision.demo.KEY_IMAGE_URI";
     private static final String KEY_SELECTED_SIZE = "com.google.mlkit.vision.demo.KEY_SELECTED_SIZE";
-
+    private static final String FILE_NAME_TOP = "top.txt";
+    private static final String FILE_NAME_LEFT = "left.txt";
+    private static final String FILE_NAME_RIGHT = "right.txt";
+    private static final String FILE_NAME_BOTTOM = "bottom.txt";
+    private static final String FILE_NAME_SMILE = "smile.txt";
     private static final int REQUEST_IMAGE_CAPTURE = 1001;
     private static final int REQUEST_CHOOSE_IMAGE = 1002;
 
@@ -97,12 +101,11 @@ public final class StillImageActivity extends AppCompatActivity {
     String left_str;
     String right_str;
     String bottom_str;
+    String smile_str;
     int bottom;
     int top;
     int left;
     int right;
-    int x;
-    int y;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -355,6 +358,42 @@ public final class StillImageActivity extends AppCompatActivity {
             switch (selectedMode) {
                 case FACE_DETECTION:
                     imageProcessor = new FaceDetectorProcessor(this);
+
+//                    FileInputStream fis_smile = null;
+//                    try{
+//                        fis_smile = openFileInput(FILE_NAME_SMILE);
+//                        InputStreamReader isr = new InputStreamReader(fis_smile);
+//                        BufferedReader br = new BufferedReader(isr);
+//                        StringBuilder sb = new StringBuilder();
+//
+//                        String text;
+//
+//                        while ((text=br.readLine())!=null){
+//                            sb.append(text);
+//                        }
+//                        smile_str = sb.toString();
+//                    }catch (FileNotFoundException e){
+//                        e.printStackTrace();
+//                    }catch (IOException e){
+//                        e.printStackTrace();
+//                    }finally{
+//                        if (fis_smile != null){
+//                            try{
+//                                fis_smile.close();
+//                            } catch (IOException e) {
+//                                e.printStackTrace();
+//                            }
+//                        }
+//                    }
+//
+//                    float smile = Float.parseFloat(smile_str);
+//                    Log.d("STATE2", "smile : "+ smile);
+
+//                    if(smile>0.5){
+//                        imageProcessor = new FaceDetectorProcessor(this);
+//                    }else{
+//                        Toast.makeText(getApplicationContext(),"Harap senyum, foto hanya terdeteksi jika senyum",Toast.LENGTH_LONG).show();
+//                    }
                     break;
                 default:
                     Log.e(TAG, "Unknown selectedMode: " + selectedMode);
@@ -369,10 +408,7 @@ public final class StillImageActivity extends AppCompatActivity {
         }
     }
 
-    private static final String FILE_NAME_TOP = "top.txt";
-    private static final String FILE_NAME_LEFT = "left.txt";
-    private static final String FILE_NAME_RIGHT = "right.txt";
-    private static final String FILE_NAME_BOTTOM = "bottom.txt";
+
     public void Crop(View view) {
         //FaceGraphic fg1 = new FaceGraphic();
         //        fg1.draw(canvas);
