@@ -17,6 +17,8 @@
 package com.google.mlkit.vision.demo;
 
 import android.content.ContentValues;
+import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
@@ -372,8 +374,8 @@ public final class StillImageActivity extends AppCompatActivity {
     private static final String FILE_NAME_RIGHT = "right.txt";
     private static final String FILE_NAME_BOTTOM = "bottom.txt";
     public void Crop(View view) {
-        FaceGraphic fg1 = new FaceGraphic();
-//        fg1.draw(canvas);
+        //FaceGraphic fg1 = new FaceGraphic();
+        //        fg1.draw(canvas);
         FileInputStream fis = null;
         try{
             fis = openFileInput(FILE_NAME_TOP);
@@ -490,57 +492,39 @@ public final class StillImageActivity extends AppCompatActivity {
 
         Bitmap new_bitmap = Bitmap.createBitmap(resizedBitmap,left,top,right-left,bottom-top);
         Bitmap new_bitmap_resized = Bitmap.createScaledBitmap(new_bitmap,160,160,true);
+
+        saveToInternalStorage(new_bitmap_resized, 1 );
         preview.setImageBitmap(new_bitmap_resized);
         Log.d("STATE2", "top : "+ top + " bottom : "+ bottom +" left : "+ left +" right : "+ right );
 
-        String path = Environment.getExternalStorageDirectory().toString();
-        OutputStream fOut = null;
-        File file = new File(path, "photo.jpg");
-        try {
-            fOut = new FileOutputStream(file);
-            new_bitmap_resized.compress(Bitmap.CompressFormat.JPEG,100,fOut);
-            fOut.flush();
-            fOut.close();
-//            MediaStore.Images.Media.insertImage(getContentResolver(),file.getAbsolutePath(),file.getName(),file.getName());
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
 
-//        try {
-//            String filePath = "photo.png";
-//            FileOutputStream fileOutputStream = new FileOutputStream(filePath);
-//            BufferedOutputStream bos = new BufferedOutputStream(fileOutputStream);
-//            //Toast.makeText(m_cont, "Image Saved at----" + filePath, Toast.LENGTH_LONG).show();
-//            // choose another format if PNG doesn't suit you
-//            new_bitmap_resized.compress(Bitmap.CompressFormat.PNG, 100, bos);
-//            bos.flush();
-//            bos.close();
-//            FileOutputStream out = new FileOutputStream("photo.jpeg");
-//            new_bitmap_resized.compress(Bitmap.CompressFormat.JPEG, 100, out); // bmp is your Bitmap instance
-//            PNG is a lossless format, the compression factor (100) is ignored
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//        FileOutputStream fos_right = null;
-//        int intRight = (int) right;
-//        String right_string = String.valueOf(intRight);
-//        try{
-//            fos_right = getApplicationContext().openFileOutput(FILE_NAME_RIGHT, MODE_PRIVATE);
-//            fos_right.write(right_string.getBytes());
-//        }catch (FileNotFoundException e){
-//            e.printStackTrace();
-//        }catch (IOException e){
-//            e.printStackTrace();
-//        }finally {
-//            if(fos_right!=null){
-//                try {
-//                    fos_right.close();
-//                }catch (IOException e){
-//                    e.printStackTrace();
-//                }
-//            }
-//        }
+    }
+
+    private void saveToInternalStorage(Bitmap bitmapImage, int counter){
+        ContextWrapper cw = new ContextWrapper(getApplicationContext());
+
+        // path to /data/data/yourapp/app_imageDir
+        File MyDirectory = cw.getDir("imageDir", Context.MODE_PRIVATE);
+
+        // Create imageDir
+        File MyPath = new File(MyDirectory,"Image" + counter + ".jpg");
+
+        FileOutputStream fos = null;
+        try {
+            fos = new FileOutputStream(MyPath);
+
+            // Use the compress method on the BitMap object to write image to the OutputStream
+            bitmapImage.compress(Bitmap.CompressFormat.PNG, 100, fos);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                fos.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        //return MyDirectory.getAbsolutePath();
     }
 }
