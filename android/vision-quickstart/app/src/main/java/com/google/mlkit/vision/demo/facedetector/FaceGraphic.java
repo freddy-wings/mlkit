@@ -119,6 +119,7 @@ public class FaceGraphic extends Graphic {
      * Draws the face annotations for position on the supplied canvas.
      */
     @Override
+
     public void draw(Canvas canvas) {
         Face face = this.face;
         if (face == null) {
@@ -141,21 +142,18 @@ public class FaceGraphic extends Graphic {
         // Decide color based on face ID
         int colorID = (face.getTrackingId() == null)
                 ? 0 : Math.abs(face.getTrackingId() % NUM_COLORS);
-        float tracking = face.getTrackingId();
         float righteyeopen = face.getRightEyeOpenProbability();
         float lefteyeopen = face.getLeftEyeOpenProbability();
-        float smiling = face.getSmilingProbability();
-
-        if(tracking != 0){
-            Toast.makeText(getApplicationContext(),"Harap memotret satu wajah saja",Toast.LENGTH_LONG).show();
-
-        }
-
-
+//        float smiling = face.getSmilingProbability();
+        reset:
+//        if(face.getTrackingId() != 0){
+//            Toast.makeText(getApplicationContext(),"Harap memotret satu wajah saja",Toast.LENGTH_LONG).show();
+//            break reset;
+//        }
         if (righteyeopen<0.5 || lefteyeopen < 0.5){
             Toast.makeText(getApplicationContext(),"Harap membuka kedua mata",Toast.LENGTH_LONG).show();
         }else{
-            Toast.makeText(getApplicationContext(),"detected face "+tracking,Toast.LENGTH_LONG).show();
+//            Toast.makeText(getApplicationContext(),"detected face "+face.getTrackingId(),Toast.LENGTH_LONG).show();
 
             // Calculate width and height of label box
             float textWidth = idPaints[colorID].measureText("ID: " + face.getTrackingId());
