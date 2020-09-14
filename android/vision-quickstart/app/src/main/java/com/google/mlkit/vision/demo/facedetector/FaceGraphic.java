@@ -141,10 +141,22 @@ public class FaceGraphic extends Graphic {
         // Decide color based on face ID
         int colorID = (face.getTrackingId() == null)
                 ? 0 : Math.abs(face.getTrackingId() % NUM_COLORS);
+        float tracking = face.getTrackingId();
+        float righteyeopen = face.getRightEyeOpenProbability();
+        float lefteyeopen = face.getLeftEyeOpenProbability();
+        float smiling = face.getSmilingProbability();
 
-        if (face.getSmilingProbability()<0.5){
-            Toast.makeText(getApplicationContext(),"Harap senyum, foto hanya terdeteksi jika senyum",Toast.LENGTH_LONG).show();
+        if(tracking != 0){
+            Toast.makeText(getApplicationContext(),"Harap memotret satu wajah saja",Toast.LENGTH_LONG).show();
+
+        }
+
+
+        if (righteyeopen<0.5 || lefteyeopen < 0.5){
+            Toast.makeText(getApplicationContext(),"Harap membuka kedua mata",Toast.LENGTH_LONG).show();
         }else{
+            Toast.makeText(getApplicationContext(),"detected face "+tracking,Toast.LENGTH_LONG).show();
+
             // Calculate width and height of label box
             float textWidth = idPaints[colorID].measureText("ID: " + face.getTrackingId());
             if (face.getSmilingProbability() != null) {
