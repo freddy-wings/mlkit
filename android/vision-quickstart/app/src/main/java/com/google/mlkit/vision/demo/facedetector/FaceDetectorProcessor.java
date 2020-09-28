@@ -19,6 +19,7 @@ package com.google.mlkit.vision.demo.facedetector;
 import android.content.Context;
 import android.graphics.PointF;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
@@ -72,9 +73,17 @@ public class FaceDetectorProcessor extends VisionProcessorBase<List<Face>> {
 
     @Override
     protected void onSuccess(@NonNull List<Face> faces, @NonNull GraphicOverlay graphicOverlay) {
-        for (Face face : faces) {
-            graphicOverlay.add(new FaceGraphic(graphicOverlay, face));
-            logExtrasForTesting(face);
+        if(faces.size()!=1)
+        {
+//            Context context = getApplicationContext();
+//            Toast.makeText(context,"Harap membuka kedua mata",Toast.LENGTH_LONG).show();
+            Log.d("only_1", "FOTO 1 WAJAH SAJA");
+        }
+        else{
+            for (Face face : faces) {
+                graphicOverlay.add(new FaceGraphic(graphicOverlay, face));
+                logExtrasForTesting(face);
+            }
         }
     }
 
