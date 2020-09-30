@@ -1,5 +1,6 @@
 package com.google.mlkit.vision.demo
 
+import android.content.Context
 import android.content.res.AssetFileDescriptor
 import android.graphics.Bitmap
 import android.os.Bundle
@@ -7,6 +8,7 @@ import android.os.Parcelable
 import android.util.Log
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import com.google.mlkit.vision.demo.facedetector.FaceGraphic
 import org.tensorflow.lite.DataType
 import org.tensorflow.lite.Interpreter
 import org.tensorflow.lite.support.common.ops.NormalizeOp
@@ -15,6 +17,8 @@ import org.tensorflow.lite.support.image.TensorImage
 import org.tensorflow.lite.support.image.ops.ResizeOp
 import org.tensorflow.lite.support.tensorbuffer.TensorBuffer
 import java.io.FileInputStream
+import java.io.FileNotFoundException
+import java.io.FileOutputStream
 import java.io.IOException
 import java.nio.MappedByteBuffer
 import java.nio.channels.FileChannel
@@ -23,6 +27,7 @@ import java.nio.channels.FileChannel
 class VerifActivity : AppCompatActivity() {
     private var TAG = "VerifyActivity"
     private var MODEL_PATH = "TFLITE_INCEPTIONv2.tflite"
+    private val FILE_NAME_ARRAY = "array.txt"
     private lateinit var tfliteModel : MappedByteBuffer
     private lateinit var interpreter : Interpreter
     private lateinit var tImage : TensorImage
@@ -45,6 +50,25 @@ class VerifActivity : AppCompatActivity() {
         initializeModel()
         getEmbedding(image_bitmap)
         textview.setText(float_array.joinToString())
+
+        var fos_array: FileOutputStream? = null
+        try {
+
+            fos_array = applicationContext.openFileOutput(FILE_NAME_ARRAY, Context.MODE_PRIVATE)
+            fos_array.write(float_array.joinToString().toByteArray())
+        } catch (e: FileNotFoundException) {
+            e.printStackTrace()
+        } catch (e: IOException) {
+            e.printStackTrace()
+        } finally {
+            if (fos_array != null) {
+                try {
+                    fos_array.close()
+                } catch (e: IOException) {
+                    e.printStackTrace()
+                }
+            }
+        }
     }
 
     private fun initializeModel(){
