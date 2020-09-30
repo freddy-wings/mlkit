@@ -7,7 +7,7 @@ android {
 
     defaultConfig {
         applicationId "com.google.mlkit.vision.demo"
-        minSdkVersion 16
+        minSdkVersion 19
         multiDexEnabled true
         targetSdkVersion 29
 
@@ -41,6 +41,14 @@ repositories {
 dependencies {
     implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.3.72'
     implementation 'androidx.multidex:multidex:2.0.1'
+
+    implementation 'org.tensorflow:tensorflow-lite:0.0.0-nightly'
+    // The GPU delegate library is optional. Depend on it as needed.
+    implementation 'org.tensorflow:tensorflow-lite-gpu:0.0.0-nightly'
+    implementation 'org.tensorflow:tensorflow-lite-support:0.0.0-nightly'
+    // This dependency adds the necessary TF op support.
+    implementation 'org.tensorflow:tensorflow-lite-select-tf-ops:0.0.0-nightly'
+
 
     // Barcode model
     implementation 'com.google.mlkit:barcode-scanning:16.0.2'
