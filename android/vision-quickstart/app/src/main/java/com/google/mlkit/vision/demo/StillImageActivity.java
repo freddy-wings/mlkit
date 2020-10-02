@@ -117,22 +117,25 @@ public final class StillImageActivity extends AppCompatActivity {
                 .setOnClickListener(
                         view -> {
                             // Menu for selecting either: a) take new photo b) select from existing
-                            PopupMenu popup = new PopupMenu(StillImageActivity.this, view);
-                            popup.setOnMenuItemClickListener(
-                                    menuItem -> {
-                                        int itemId = menuItem.getItemId();
-                                        if (itemId == R.id.select_images_from_local) {
-                                            startChooseImageIntentForResult();
-                                            return true;
-                                        }else if (itemId == R.id.take_photo_using_camera) {
-                                            startCameraIntentForResult();
-                                            return true;
-                                        }
-                                        return false;
-                                    });
-                            MenuInflater inflater = popup.getMenuInflater();
-                            inflater.inflate(R.menu.camera_button_menu, popup.getMenu());
-                            popup.show();
+                            Intent intent = new Intent(StillImageActivity.this, LivenessActivity.class);
+                            startActivity(intent);
+
+//                            PopupMenu popup = new PopupMenu(StillImageActivity.this, view);
+//                            popup.setOnMenuItemClickListener(
+//                                    menuItem -> {
+//                                        int itemId = menuItem.getItemId();
+//                                        if (itemId == R.id.select_images_from_local) {
+//                                            startChooseImageIntentForResult();
+//                                            return true;
+//                                        }else if (itemId == R.id.take_photo_using_camera) {
+//                                            startCameraIntentForResult();
+//                                            return true;
+//                                        }
+//                                        return false;
+//                                    });
+//                            MenuInflater inflater = popup.getMenuInflater();
+//                            inflater.inflate(R.menu.camera_button_menu, popup.getMenu());
+//                            popup.show();
                         });
         preview = findViewById(R.id.preview);
         graphicOverlay = findViewById(R.id.graphic_overlay);
@@ -280,52 +283,49 @@ public final class StillImageActivity extends AppCompatActivity {
 
     public void tryReloadAndDetectInImage() {
         Log.d(TAG, "Try reload and detect image");
-        try {
-            if (imageUri == null) {
-                return;
-            }
+        Intent get_intent = getIntent();
+        imageBitmap = get_intent.getParcelableExtra("ImageLiveness");
+        if (imageUri == null) {
+            return;
+        }
 
-            if (SIZE_SCREEN.equals(selectedSize) && imageMaxWidth == 0) {
-                // UI layout has not finished yet, will reload once it's ready.
-                return;
-            }
+        if (SIZE_SCREEN.equals(selectedSize) && imageMaxWidth == 0) {
+            // UI layout has not finished yet, will reload once it's ready.
+            return;
+        }
 
-            imageBitmap = BitmapUtils.getBitmapFromContentUri(getContentResolver(), imageUri);
-            if (imageBitmap == null) {
-                return;
-            }
+//            imageBitmap = BitmapUtils.getBitmapFromContentUri(getContentResolver(), imageUri);
+        if (imageBitmap == null) {
+            return;
+        }
 
-            // Clear the overlay first
-            graphicOverlay.clear();
+        // Clear the overlay first
+        graphicOverlay.clear();
 
-            // Get the dimensions of the image view
-            Pair<Integer, Integer> targetedSize = getTargetedWidthHeight();
+        // Get the dimensions of the image view
+        Pair<Integer, Integer> targetedSize = getTargetedWidthHeight();
 
-            // Determine how much to scale down the image
-            float scaleFactor =
-                    Math.max(
-                            (float) imageBitmap.getWidth() / (float) targetedSize.first,
-                            (float) imageBitmap.getHeight() / (float) targetedSize.second);
+        // Determine how much to scale down the image
+        float scaleFactor =
+                Math.max(
+                        (float) imageBitmap.getWidth() / (float) targetedSize.first,
+                        (float) imageBitmap.getHeight() / (float) targetedSize.second);
 
-            resizedBitmap =
-                    Bitmap.createScaledBitmap(
-                            imageBitmap,
-                            (int) (imageBitmap.getWidth() / scaleFactor),
-                            (int) (imageBitmap.getHeight() / scaleFactor),
-                            true);
+        resizedBitmap =
+                Bitmap.createScaledBitmap(
+                        imageBitmap,
+                        (int) (imageBitmap.getWidth() / scaleFactor),
+                        (int) (imageBitmap.getHeight() / scaleFactor),
+                        true);
 
-            preview.setImageBitmap(resizedBitmap);
+        preview.setImageBitmap(resizedBitmap);
 
-            if (imageProcessor != null) {
-                graphicOverlay.setImageSourceInfo(
-                        resizedBitmap.getWidth(), resizedBitmap.getHeight(), /* isFlipped= */ false);
-                imageProcessor.processBitmap(resizedBitmap, graphicOverlay);
-            } else {
-                Log.e(TAG, "Null imageProcessor, please check adb logs for imageProcessor creation error");
-            }
-        } catch (IOException e) {
-            Log.e(TAG, "Error retrieving saved image");
-            imageUri = null;
+        if (imageProcessor != null) {
+            graphicOverlay.setImageSourceInfo(
+                    resizedBitmap.getWidth(), resizedBitmap.getHeight(), /* isFlipped= */ false);
+            imageProcessor.processBitmap(resizedBitmap, graphicOverlay);
+        } else {
+            Log.e(TAG, "Null imageProcessor, please check adb logs for imageProcessor creation error");
         }
     }
 
@@ -358,42 +358,6 @@ public final class StillImageActivity extends AppCompatActivity {
             switch (selectedMode) {
                 case FACE_DETECTION:
                     imageProcessor = new FaceDetectorProcessor(this);
-
-//                    FileInputStream fis_smile = null;
-//                    try{
-//                        fis_smile = openFileInput(FILE_NAME_SMILE);
-//                        InputStreamReader isr = new InputStreamReader(fis_smile);
-//                        BufferedReader br = new BufferedReader(isr);
-//                        StringBuilder sb = new StringBuilder();
-//
-//                        String text;
-//
-//                        while ((text=br.readLine())!=null){
-//                            sb.append(text);
-//                        }
-//                        smile_str = sb.toString();
-//                    }catch (FileNotFoundException e){
-//                        e.printStackTrace();
-//                    }catch (IOException e){
-//                        e.printStackTrace();
-//                    }finally{
-//                        if (fis_smile != null){
-//                            try{
-//                                fis_smile.close();
-//                            } catch (IOException e) {
-//                                e.printStackTrace();
-//                            }
-//                        }
-//                    }
-//
-//                    float smile = Float.parseFloat(smile_str);
-//                    Log.d("STATE2", "smile : "+ smile);
-
-//                    if(smile>0.5){
-//                        imageProcessor = new FaceDetectorProcessor(this);
-//                    }else{
-//                        Toast.makeText(getApplicationContext(),"Harap senyum, foto hanya terdeteksi jika senyum",Toast.LENGTH_LONG).show();
-//                    }
                     break;
                 default:
                     Log.e(TAG, "Unknown selectedMode: " + selectedMode);
