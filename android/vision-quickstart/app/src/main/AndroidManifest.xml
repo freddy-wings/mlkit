@@ -52,6 +52,18 @@
             android:exported="true"
             android:theme="@style/AppTheme">
         </activity>
+
+        <activity
+            android:name=".VerifActivity2"
+            android:exported="true"
+            android:theme="@style/AppTheme">
+        </activity>
+
+        <activity
+            android:name=".StillImageActivity2"
+            android:exported="true"
+            android:theme="@style/AppTheme">
+        </activity>
     </application>
 
 </manifest>

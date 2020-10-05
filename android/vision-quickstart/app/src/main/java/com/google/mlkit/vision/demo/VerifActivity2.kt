@@ -7,7 +7,6 @@ import android.graphics.Bitmap
 import android.os.Bundle
 import android.os.Parcelable
 import android.util.Log
-import android.view.View
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_verif.*
@@ -18,18 +17,16 @@ import org.tensorflow.lite.support.image.ImageProcessor
 import org.tensorflow.lite.support.image.TensorImage
 import org.tensorflow.lite.support.image.ops.ResizeOp
 import org.tensorflow.lite.support.tensorbuffer.TensorBuffer
-import java.io.FileInputStream
-import java.io.FileNotFoundException
-import java.io.FileOutputStream
-import java.io.IOException
+import java.io.*
 import java.nio.MappedByteBuffer
 import java.nio.channels.FileChannel
 
 
-class VerifActivity : AppCompatActivity() {
+class VerifActivity2 : AppCompatActivity() {
     private var TAG = "VerifyActivity"
     private var MODEL_PATH = "TFLITE_INCEPTIONv2.tflite"
-    private val FILE_NAME_ARRAY = "array1.txt"
+    private val FILE_NAME_ARRAY = "array2.txt"
+    private val FILE_NAME_ARRAY1 = "array1.txt"
     private lateinit var tfliteModel : MappedByteBuffer
     private lateinit var interpreter : Interpreter
     private lateinit var tImage : TensorImage
@@ -40,10 +37,12 @@ class VerifActivity : AppCompatActivity() {
     private val IMAGE_STD = 128f
     private lateinit var textview : TextView
     private lateinit var float_array : FloatArray
+    private lateinit var float_array2 : FloatArray
+    private lateinit var array1_str : String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_verif)
+        setContentView(R.layout.activity_verif2)
         textview = findViewById(R.id.text1)
 
         val intent = intent
@@ -51,7 +50,41 @@ class VerifActivity : AppCompatActivity() {
 
         initializeModel()
         getEmbedding(image_bitmap)
-        textview.setText("berhasil input image 1, silakan klik tombol next untuk input image 2")
+
+        //read array1
+        var array_1: FileInputStream? = null
+        try {
+            array_1 = openFileInput(FILE_NAME_ARRAY1)
+            val isr = InputStreamReader(array_1)
+            val br = BufferedReader(isr)
+            val sb = StringBuilder()
+            var text: String?
+            while (br.readLine().also { text = it } != null) {
+                sb.append(text)
+            }
+            array1_str = sb.toString()
+        } catch (e: FileNotFoundException) {
+            e.printStackTrace()
+        } catch (e: IOException) {
+            e.printStackTrace()
+        } finally {
+            if (array_1 != null) {
+                try {
+                    array_1.close()
+                } catch (e: IOException) {
+                    e.printStackTrace()
+                }
+            }
+        }
+
+        val text = array1_str.split(",".toRegex()).toTypedArray()
+        val float_array2 = FloatArray(text.size)
+        for (i in float_array2.indices) {
+            float_array2[i] = text[i].toFloat()
+        }
+
+        val float_result = cosineSimilarity(float_array,float_array2)
+        textview.setText("cosine similarity = " + float_result.toString())
 
         var fos_array: FileOutputStream? = null
         try {
@@ -71,12 +104,18 @@ class VerifActivity : AppCompatActivity() {
                 }
             }
         }
-        next.setOnClickListener {
-            val new_intent = Intent(this, StillImageActivity2::class.java)
-            // start your next activity
-            startActivity(new_intent)
-        }
 
+    }
+    fun cosineSimilarity(vectorA: FloatArray, vectorB: FloatArray): Float {
+        var dotProduct = 0.0.toFloat()
+        var normA = 0.0.toFloat()
+        var normB = 0.0.toFloat()
+        for (i in vectorA.indices) {
+            dotProduct += vectorA[i] * vectorB[i]
+            normA += Math.pow(vectorA[i].toDouble(), 2.0).toFloat()
+            normB += Math.pow(vectorB[i].toDouble(), 2.0).toFloat()
+        }
+        return (dotProduct / (Math.sqrt(normA.toDouble()) * Math.sqrt(normB.toDouble()))).toFloat()
     }
 
     private fun initializeModel(){

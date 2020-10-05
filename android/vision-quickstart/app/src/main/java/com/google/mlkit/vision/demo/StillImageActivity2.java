@@ -24,18 +24,13 @@ import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.provider.MediaStore;
-
-import android.view.ViewTreeObserver.OnGlobalLayoutListener;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.util.Log;
 import android.util.Pair;
 import android.view.Menu;
 import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
@@ -44,9 +39,10 @@ import android.widget.PopupMenu;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.google.android.gms.common.annotation.KeepName;
 import com.google.mlkit.vision.demo.facedetector.FaceDetectorProcessor;
-import com.google.mlkit.vision.demo.facedetector.FaceGraphic;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -55,7 +51,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -63,7 +58,7 @@ import java.util.List;
  * Activity demonstrating different image detector features with a still image from camera.
  */
 @KeepName
-public final class StillImageActivity extends AppCompatActivity {
+public final class StillImageActivity2 extends AppCompatActivity {
 
     private static final String TAG = "StillImageActivity";
 
@@ -113,12 +108,11 @@ public final class StillImageActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_still_image);
 
-
         findViewById(R.id.select_image_button)
                 .setOnClickListener(
                         view -> {
                             // Menu for selecting either: a) take new photo b) select from existing
-                            PopupMenu popup = new PopupMenu(StillImageActivity.this, view);
+                            PopupMenu popup = new PopupMenu(StillImageActivity2.this, view);
                             popup.setOnMenuItemClickListener(
                                     menuItem -> {
                                         int itemId = menuItem.getItemId();
@@ -520,6 +514,7 @@ public final class StillImageActivity extends AppCompatActivity {
                 }
             }
         }
+
         top = Integer.parseInt(top_str);
         bottom = Integer.parseInt(bottom_str);
         left = Integer.parseInt(left_str);
@@ -534,7 +529,7 @@ public final class StillImageActivity extends AppCompatActivity {
         preview.setImageBitmap(new_bitmap_resized);
         Log.d("STATE2", "top : "+ top + " bottom : "+ bottom +" left : "+ left +" right : "+ right );
 
-        Intent intent = new Intent(StillImageActivity.this, VerifActivity.class);
+        Intent intent = new Intent(StillImageActivity2.this, VerifActivity2.class);
         intent.putExtra("BitmapImage", new_bitmap_resized);
         startActivity(intent);
     }
