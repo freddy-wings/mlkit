@@ -6,6 +6,7 @@ import android.graphics.Bitmap
 import android.os.Bundle
 import android.os.Parcelable
 import android.util.Log
+import android.view.View
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.google.mlkit.vision.demo.facedetector.FaceGraphic
@@ -49,7 +50,7 @@ class VerifActivity : AppCompatActivity() {
 
         initializeModel()
         getEmbedding(image_bitmap)
-        textview.setText(float_array.joinToString())
+        textview.setText("berhasil input image 1, silakan klik tombol next untuk input image 2")
 
         var fos_array: FileOutputStream? = null
         try {
@@ -126,4 +127,6 @@ class VerifActivity : AppCompatActivity() {
                 .build()
         return imageProcessor.process(tImage)
     }
+
+    fun next(view: View) {}
 }
