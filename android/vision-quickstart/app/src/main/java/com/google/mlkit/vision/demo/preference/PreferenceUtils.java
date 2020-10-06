@@ -28,13 +28,8 @@ import androidx.annotation.StringRes;
 import com.google.android.gms.common.images.Size;
 import com.google.common.base.Preconditions;
 import com.google.mlkit.common.model.LocalModel;
-import com.google.mlkit.vision.demo.CameraSource;
-import com.google.mlkit.vision.demo.CameraSource.SizePair;
 import com.google.mlkit.vision.demo.R;
 import com.google.mlkit.vision.face.FaceDetectorOptions;
-import com.google.mlkit.vision.objects.ObjectDetectorOptionsBase.DetectorMode;
-import com.google.mlkit.vision.objects.custom.CustomObjectDetectorOptions;
-import com.google.mlkit.vision.objects.defaults.ObjectDetectorOptions;
 
 /**
  * Utility class to retrieve shared preferences.
@@ -47,31 +42,30 @@ public class PreferenceUtils {
                 .putString(context.getString(prefKeyId), value)
                 .apply();
     }
-
-    @Nullable
-    public static SizePair getCameraPreviewSizePair(Context context, int cameraId) {
-        Preconditions.checkArgument(
-                cameraId == CameraSource.CAMERA_FACING_BACK
-                        || cameraId == CameraSource.CAMERA_FACING_FRONT);
-        String previewSizePrefKey;
-        String pictureSizePrefKey;
-        if (cameraId == CameraSource.CAMERA_FACING_BACK) {
-            previewSizePrefKey = context.getString(R.string.pref_key_rear_camera_preview_size);
-            pictureSizePrefKey = context.getString(R.string.pref_key_rear_camera_picture_size);
-        } else {
-            previewSizePrefKey = context.getString(R.string.pref_key_front_camera_preview_size);
-            pictureSizePrefKey = context.getString(R.string.pref_key_front_camera_picture_size);
-        }
-
-        try {
-            SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
-            return new SizePair(
-                    Size.parseSize(sharedPreferences.getString(previewSizePrefKey, null)),
-                    Size.parseSize(sharedPreferences.getString(pictureSizePrefKey, null)));
-        } catch (Exception e) {
-            return null;
-        }
-    }
+    //@Nullable
+//    public static SizePair getCameraPreviewSizePair(Context context, int cameraId) {
+//        Preconditions.checkArgument(
+//                cameraId == CameraSource.CAMERA_FACING_BACK
+//                        || cameraId == CameraSource.CAMERA_FACING_FRONT);
+//        String previewSizePrefKey;
+//        String pictureSizePrefKey;
+//        if (cameraId == CameraSource.CAMERA_FACING_BACK) {
+//            previewSizePrefKey = context.getString(R.string.pref_key_rear_camera_preview_size);
+//            pictureSizePrefKey = context.getString(R.string.pref_key_rear_camera_picture_size);
+//        } else {
+//            previewSizePrefKey = context.getString(R.string.pref_key_front_camera_preview_size);
+//            pictureSizePrefKey = context.getString(R.string.pref_key_front_camera_picture_size);
+//        }
+//
+//        try {
+//            SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+//            return new SizePair(
+//                    Size.parseSize(sharedPreferences.getString(previewSizePrefKey, null)),
+//                    Size.parseSize(sharedPreferences.getString(pictureSizePrefKey, null)));
+//        } catch (Exception e) {
+//            return null;
+//        }
+//    }
 
     @RequiresApi(VERSION_CODES.LOLLIPOP)
     @Nullable
@@ -83,91 +77,6 @@ public class PreferenceUtils {
         } catch (Exception e) {
             return null;
         }
-    }
-
-    public static ObjectDetectorOptions getObjectDetectorOptionsForStillImage(Context context) {
-        return getObjectDetectorOptions(
-                context,
-                R.string.pref_key_still_image_object_detector_enable_multiple_objects,
-                R.string.pref_key_still_image_object_detector_enable_classification,
-                ObjectDetectorOptions.SINGLE_IMAGE_MODE);
-    }
-
-    public static ObjectDetectorOptions getObjectDetectorOptionsForLivePreview(Context context) {
-        return getObjectDetectorOptions(
-                context,
-                R.string.pref_key_live_preview_object_detector_enable_multiple_objects,
-                R.string.pref_key_live_preview_object_detector_enable_classification,
-                ObjectDetectorOptions.STREAM_MODE);
-    }
-
-    private static ObjectDetectorOptions getObjectDetectorOptions(
-            Context context,
-            @StringRes int prefKeyForMultipleObjects,
-            @StringRes int prefKeyForClassification,
-            @DetectorMode int mode) {
-
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
-
-        boolean enableMultipleObjects =
-                sharedPreferences.getBoolean(context.getString(prefKeyForMultipleObjects), false);
-        boolean enableClassification =
-                sharedPreferences.getBoolean(context.getString(prefKeyForClassification), true);
-
-        ObjectDetectorOptions.Builder builder =
-                new ObjectDetectorOptions.Builder().setDetectorMode(mode);
-        if (enableMultipleObjects) {
-            builder.enableMultipleObjects();
-        }
-        if (enableClassification) {
-            builder.enableClassification();
-        }
-        return builder.build();
-    }
-
-    public static CustomObjectDetectorOptions getCustomObjectDetectorOptionsForStillImage(
-            Context context, LocalModel localModel) {
-        return getCustomObjectDetectorOptions(
-                context,
-                localModel,
-                R.string.pref_key_still_image_object_detector_enable_multiple_objects,
-                R.string.pref_key_still_image_object_detector_enable_classification,
-                CustomObjectDetectorOptions.SINGLE_IMAGE_MODE);
-    }
-
-    public static CustomObjectDetectorOptions getCustomObjectDetectorOptionsForLivePreview(
-            Context context, LocalModel localModel) {
-        return getCustomObjectDetectorOptions(
-                context,
-                localModel,
-                R.string.pref_key_live_preview_object_detector_enable_multiple_objects,
-                R.string.pref_key_live_preview_object_detector_enable_classification,
-                CustomObjectDetectorOptions.STREAM_MODE);
-    }
-
-    private static CustomObjectDetectorOptions getCustomObjectDetectorOptions(
-            Context context,
-            LocalModel localModel,
-            @StringRes int prefKeyForMultipleObjects,
-            @StringRes int prefKeyForClassification,
-            @DetectorMode int mode) {
-
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
-
-        boolean enableMultipleObjects =
-                sharedPreferences.getBoolean(context.getString(prefKeyForMultipleObjects), false);
-        boolean enableClassification =
-                sharedPreferences.getBoolean(context.getString(prefKeyForClassification), true);
-
-        CustomObjectDetectorOptions.Builder builder =
-                new CustomObjectDetectorOptions.Builder(localModel).setDetectorMode(mode);
-        if (enableMultipleObjects) {
-            builder.enableMultipleObjects();
-        }
-        if (enableClassification) {
-            builder.enableClassification();
-        }
-        return builder.build();
     }
 
     public static FaceDetectorOptions getFaceDetectorOptionsForLivePreview(Context context) {
@@ -199,7 +108,7 @@ public class PreferenceUtils {
         float minFaceSize =
                 Float.parseFloat(
                         sharedPreferences.getString(
-                                context.getString(R.string.pref_key_live_preview_face_detection_min_face_size),
+                                        context.getString(R.string.pref_key_live_preview_face_detection_min_face_size),
                                 "0.1"));
 
         FaceDetectorOptions.Builder optionsBuilder =

@@ -106,6 +106,7 @@ class VerifActivity2 : AppCompatActivity() {
         }
 
     }
+
     fun cosineSimilarity(vectorA: FloatArray, vectorB: FloatArray): Float {
         var dotProduct = 0.0.toFloat()
         var normA = 0.0.toFloat()
@@ -115,7 +116,7 @@ class VerifActivity2 : AppCompatActivity() {
             normA += Math.pow(vectorA[i].toDouble(), 2.0).toFloat()
             normB += Math.pow(vectorB[i].toDouble(), 2.0).toFloat()
         }
-        return (dotProduct / (Math.sqrt(normA.toDouble()) * Math.sqrt(normB.toDouble()))).toFloat()
+        return (1-(dotProduct / (Math.sqrt(normA.toDouble()) * Math.sqrt(normB.toDouble())))).toFloat()
     }
 
     private fun initializeModel(){

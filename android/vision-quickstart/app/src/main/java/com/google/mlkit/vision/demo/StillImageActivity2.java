@@ -525,7 +525,7 @@ public final class StillImageActivity2 extends AppCompatActivity {
         Bitmap new_bitmap = Bitmap.createBitmap(resizedBitmap,left,top,right-left,bottom-top);
         Bitmap new_bitmap_resized = Bitmap.createScaledBitmap(new_bitmap,160,160,true);
 
-        saveToInternalStorage(new_bitmap_resized, 1 );
+        saveToInternalStorage(new_bitmap_resized, 2 );
         preview.setImageBitmap(new_bitmap_resized);
         Log.d("STATE2", "top : "+ top + " bottom : "+ bottom +" left : "+ left +" right : "+ right );
 
