@@ -29,8 +29,8 @@ import androidx.annotation.GuardedBy;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
-import androidx.camera.core.ExperimentalGetImage;
-import androidx.camera.core.ImageProxy;
+//import androidx.camera.core.ExperimentalGetImage;
+//import androidx.camera.core.ImageProxy;
 
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.TaskExecutors;
@@ -150,30 +150,30 @@ public abstract class VisionProcessorBase<T> implements VisionImageProcessor {
     }
 
     // -----------------Code for processing live preview frame from CameraX API-----------------------
-    @Override
-    @RequiresApi(VERSION_CODES.KITKAT)
-    @ExperimentalGetImage
-    public void processImageProxy(ImageProxy image, GraphicOverlay graphicOverlay) {
-        if (isShutdown) {
-            image.close();
-            return;
-        }
+//    @Override
+//    @RequiresApi(VERSION_CODES.KITKAT)
+//    @ExperimentalGetImage
+//    public void processImageProxy(ImageProxy image, GraphicOverlay graphicOverlay) {
+//        if (isShutdown) {
+//            image.close();
+//            return;
+//        }
 
         Bitmap bitmap = null;
-        if (!PreferenceUtils.isCameraLiveViewportEnabled(graphicOverlay.getContext())) {
-            bitmap = BitmapUtils.getBitmap(image);
-        }
-
-        requestDetectInImage(
-                InputImage.fromMediaImage(image.getImage(), image.getImageInfo().getRotationDegrees()),
-                graphicOverlay,
-                /* originalCameraImage= */ bitmap,
-                /* shouldShowFps= */ true)
-                // When the image is from CameraX analysis use case, must call image.close() on received
-                // images when finished using them. Otherwise, new images may not be received or the camera
-                // may stall.
-                .addOnCompleteListener(results -> image.close());
-    }
+//        if (!PreferenceUtils.isCameraLiveViewportEnabled(graphicOverlay.getContext())) {
+//            bitmap = BitmapUtils.getBitmap(image);
+//        }
+//
+//        requestDetectInImage(
+//                InputImage.fromMediaImage(image.getImage(), image.getImageInfo().getRotationDegrees()),
+//                graphicOverlay,
+//                /* originalCameraImage= */ bitmap,
+//                /* shouldShowFps= */ true)
+//                // When the image is from CameraX analysis use case, must call image.close() on received
+//                // images when finished using them. Otherwise, new images may not be received or the camera
+//                // may stall.
+//                .addOnCompleteListener(results -> image.close());
+//    }
 
     // -----------------Common processing logic-------------------------------------------------------
     private Task<T> requestDetectInImage(

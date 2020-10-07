@@ -28,7 +28,7 @@ import java.nio.channels.FileChannel
 
 class VerifActivity : AppCompatActivity() {
     private var TAG = "VerifyActivity"
-    private var MODEL_PATH = "facenet_minify_512.tflite"
+    private var MODEL_PATH = "MobileFacenet_20201006.tflite"
     private val FILE_NAME_ARRAY = "array1.txt"
     private lateinit var tfliteModel : MappedByteBuffer
     private lateinit var interpreter : Interpreter
