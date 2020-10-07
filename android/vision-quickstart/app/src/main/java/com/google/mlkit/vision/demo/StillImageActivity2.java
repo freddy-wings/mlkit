@@ -119,10 +119,11 @@ public final class StillImageActivity2 extends AppCompatActivity {
                                         if (itemId == R.id.select_images_from_local) {
                                             startChooseImageIntentForResult();
                                             return true;
-                                        }else if (itemId == R.id.take_photo_using_camera) {
-                                            startCameraIntentForResult();
-                                            return true;
                                         }
+//                                        else if (itemId == R.id.take_photo_using_camera) {
+//                                            startCameraIntentForResult();
+//                                            return true;
+//                                        }
                                         return false;
                                     });
                             MenuInflater inflater = popup.getMenuInflater();
