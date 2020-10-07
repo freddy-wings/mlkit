@@ -535,9 +535,6 @@ public final class StillImageActivity extends AppCompatActivity {
         preview.setImageBitmap(new_bitmap_resized);
         Log.d("STATE2", "top : "+ top + " bottom : "+ bottom +" left : "+ left +" right : "+ right );
 
-        Intent intent = new Intent(StillImageActivity.this, VerifActivity.class);
-        intent.putExtra("BitmapImage", new_bitmap_resized);
-        startActivity(intent);
     }
 
 
