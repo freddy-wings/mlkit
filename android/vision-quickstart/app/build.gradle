@@ -66,10 +66,10 @@ dependencies {
     implementation 'com.google.mlkit:face-detection:16.0.1'
 
     // Image labeling
-    implementation 'com.google.mlkit:image-labeling:16.2.0'
+//    implementation 'com.google.mlkit:image-labeling:16.2.0'
 
     // Image labeling custom
-    implementation 'com.google.mlkit:image-labeling-custom:16.2.0'
+//    implementation 'com.google.mlkit:image-labeling-custom:16.2.0'
 
     // -------------------------------------------------------
 
