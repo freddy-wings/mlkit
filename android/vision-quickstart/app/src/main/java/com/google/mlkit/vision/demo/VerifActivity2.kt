@@ -36,6 +36,7 @@ class VerifActivity2 : AppCompatActivity() {
     private val IMAGE_MEAN = 127.5f
     private val IMAGE_STD = 128f
     private lateinit var textview : TextView
+    private lateinit var textview2 : TextView
     private lateinit var float_array : FloatArray
     private lateinit var float_array2 : FloatArray
     private lateinit var array1_str : String
@@ -44,6 +45,7 @@ class VerifActivity2 : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_verif2)
         textview = findViewById(R.id.text1)
+        textview2 = findViewById(R.id.text2)
 
         val intent = intent
         val image_bitmap = intent.getParcelableExtra<Parcelable>("BitmapImage") as Bitmap
@@ -85,6 +87,14 @@ class VerifActivity2 : AppCompatActivity() {
 
         val float_result = cosineSimilarity(float_array,float_array2)
         textview.setText("cosine similarity = " + float_result.toString())
+
+        if(float_result>0.4)
+        {
+            textview2.setText("NOT VERIFIED")
+        }else{
+            textview2.setText("VERIFIED")
+        }
+
 
         var fos_array: FileOutputStream? = null
         try {
