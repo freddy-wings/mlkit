@@ -28,14 +28,14 @@ import java.nio.channels.FileChannel
 
 class VerifActivity : AppCompatActivity() {
     private var TAG = "VerifyActivity"
-    private var MODEL_PATH = "facenet_minify_512.tflite"
+    private var MODEL_PATH = "MobileFaceNet_20201009.tflite"
     private val FILE_NAME_ARRAY = "array1.txt"
     private lateinit var tfliteModel : MappedByteBuffer
     private lateinit var interpreter : Interpreter
     private lateinit var tImage : TensorImage
     private lateinit var tBuffer : TensorBuffer
-    var inputImageHeight = 160
-    var inputImageWidth = 160
+    var inputImageHeight = 112
+    var inputImageWidth = 112
     private val IMAGE_MEAN = 127.5f
     private val IMAGE_STD = 128f
     private lateinit var textview : TextView
