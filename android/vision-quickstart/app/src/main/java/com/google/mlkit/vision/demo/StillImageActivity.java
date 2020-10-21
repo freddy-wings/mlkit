@@ -57,7 +57,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Calendar;
 
 /**
  * Activity demonstrating different image detector features with a still image from camera.
@@ -531,7 +533,7 @@ public final class StillImageActivity extends AppCompatActivity {
         Bitmap new_bitmap = Bitmap.createBitmap(resizedBitmap,left,top,right-left,bottom-top);
         Bitmap new_bitmap_resized = Bitmap.createScaledBitmap(new_bitmap,112,112,true);
 
-        saveToInternalStorage(new_bitmap_resized, 1 );
+        saveToInternalStorage(new_bitmap_resized);
         preview.setImageBitmap(new_bitmap_resized);
         Log.d("STATE2", "top : "+ top + " bottom : "+ bottom +" left : "+ left +" right : "+ right );
 
@@ -542,14 +544,14 @@ public final class StillImageActivity extends AppCompatActivity {
 
 
 
-    private void saveToInternalStorage(Bitmap bitmapImage, int counter){
+    private void saveToInternalStorage(Bitmap bitmapImage){
         ContextWrapper cw = new ContextWrapper(getApplicationContext());
 
         // path to /data/data/yourapp/app_imageDir
         File MyDirectory = cw.getDir("imageDir", Context.MODE_PRIVATE);
-
+        Date currentTime = Calendar.getInstance().getTime();
         // Create imageDir
-        File MyPath = new File(MyDirectory,"Image" + counter + ".jpg");
+        File MyPath = new File(MyDirectory,"Image" + currentTime + ".jpg");
 
         FileOutputStream fos = null;
         try {
